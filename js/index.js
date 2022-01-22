@@ -14,7 +14,6 @@ BaralhoCompleto.forEach(value => {
     BaralhoRounda.push(value)
 })
 
-
 function baralhamento(array){
     for(let i=array.length-1;i>0;i--){
         const j = Math.floor(Math.random() * (i+1))
@@ -61,6 +60,11 @@ NaipeH2.innerHTML=`Trunfo: ${NaipeRounda.nome}`
 let divPrincipal = document.createElement('div')
 divPrincipal.setAttribute('id','principal')
 
+function clickOnLi(event){
+    const li = document.getElementById(event.path[0].id)
+    li.classList.toggle('hide-li')
+}
+
 // Para criação da div onde vai ser representado as cartas
 const CreateUserDiv = (user) => {
     let divUser = document.createElement('div')
@@ -69,11 +73,16 @@ const CreateUserDiv = (user) => {
     divUser.appendChild(UserH4)
     let ulDiv = document.createElement('ul')
     const {baralho} = user
+
     for(let i=0;i<baralho.length;i++){
         let li = document.createElement('li')
         li.innerHTML=`${baralho[i].nome} de ${baralho[i].naipe.nome}`
+        li.setAttribute('id', `${user.id}-${i}`)
+        li.setAttribute('class', 'view-li')
+        li.addEventListener('click', clickOnLi)
         ulDiv.appendChild(li)
     }
+
     divUser.appendChild(ulDiv)
     divPrincipal.appendChild(divUser)
 }

@@ -39,3 +39,10 @@ body {
 #principal>div>ul{
     list-style: decimal;
 }
+
+.view-li{
+    visibility: visible;
+}
+.hide-li{
+    visibility: hidden;
+}
