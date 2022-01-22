@@ -3,13 +3,9 @@ import { user } from "./user.js"
 
 // Criação de usuários e separação dos seus baralhos
 let User1 = new user(1)
-let User1Baralho = User1.baralho
 let User2 = new user(2)
-let User2Baralho = User2.baralho
 let User3 = new user(3)
-let User3Baralho = User3.baralho
 let User4 = new user(4)
-let User4Baralho = User4.baralho
 
 // Criação da variável para realizar as alterações
 let BaralhoRounda = []
@@ -20,7 +16,7 @@ BaralhoCompleto.forEach(value => {
 
 
 function baralhamento(array){
-    for(let i =array.length -1; i>0; i--){
+    for(let i=array.length-1;i>0;i--){
         const j = Math.floor(Math.random() * (i+1))
         const jArrIndex = array[j]
         const iArrIndex = array[i]
@@ -36,13 +32,57 @@ function distruibuicao(array){
         const cartaUser3 = array.shift()
         const cartaUser4 = array.shift()
 
-        User1Baralho = [...User1Baralho, cartaUser1]
-        User2Baralho = [...User2Baralho, cartaUser2]
-        User3Baralho = [...User3Baralho, cartaUser3]
-        User4Baralho = [...User4Baralho, cartaUser4]
+        User1.baralho = [...User1.baralho, cartaUser1]
+        User2.baralho = [...User2.baralho, cartaUser2]
+        User3.baralho = [...User3.baralho, cartaUser3]
+        User4.baralho = [...User4.baralho, cartaUser4]
     }
 }
 
 //Neste momento vai-se baralhar e distruibuir as cartas
 baralhamento(BaralhoRounda)
 distruibuicao(BaralhoRounda)
+
+// Informação sobre o naipe de trunfo da rounda
+const CartaTrunfo = User1.baralho[0]
+const NaipeRounda = CartaTrunfo.naipe
+
+
+let CartaTrunfoH2 = document.createElement('h2')
+/*
+    * CartaTrunfo.naipe.nome == NaipeRounda.nome
+    * Return True
+*/
+CartaTrunfoH2.innerHTML = `Carta de trunfo: ${CartaTrunfo.nome} de ${CartaTrunfo.naipe.nome}`
+
+let NaipeH2 = document.createElement('h2')
+NaipeH2.innerHTML=`Trunfo: ${NaipeRounda.nome}`
+
+let divPrincipal = document.createElement('div')
+divPrincipal.setAttribute('id','principal')
+
+// Para criação da div onde vai ser representado as cartas
+const CreateUserDiv = (user) => {
+    let divUser = document.createElement('div')
+    let UserH4 = document.createElement('h4')
+    UserH4.innerHTML=`Jogador ${user.id}`
+    divUser.appendChild(UserH4)
+    let ulDiv = document.createElement('ul')
+    const {baralho} = user
+    for(let i=0;i<baralho.length;i++){
+        let li = document.createElement('li')
+        li.innerHTML=`${baralho[i].nome} de ${baralho[i].naipe.nome}`
+        ulDiv.appendChild(li)
+    }
+    divUser.appendChild(ulDiv)
+    divPrincipal.appendChild(divUser)
+}
+
+CreateUserDiv(User1)
+CreateUserDiv(User2)
+CreateUserDiv(User3)
+CreateUserDiv(User4)
+
+document.body.appendChild(CartaTrunfoH2)
+document.body.appendChild(NaipeH2)
+document.body.appendChild(divPrincipal)
