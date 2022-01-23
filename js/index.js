@@ -64,14 +64,14 @@ function CreateUserDiv(user){
     UserH4.innerHTML=`Jogador ${user.id}`
     divUser.appendChild(UserH4)
     let divCartas = document.createElement('div')
-    divCartas.setAttribute('class', 'dclasscartas')
+    divCartas.setAttribute('class', 'conjunto-cartas')
     const {baralho} = user
 
     for(let i=0;i<baralho.length;i++){
         let img = document.createElement('img')
         img.src=baralho[i].src
         img.setAttribute('id', `${user.id}-${i}`)
-        img.setAttribute('class', 'cartas-user')
+        img.setAttribute('class', 'carta-user')
         img.addEventListener('click',clickOnCard)
         divCartas.appendChild(img)
         divUser.appendChild(divCartas)
