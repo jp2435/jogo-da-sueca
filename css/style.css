@@ -5,12 +5,12 @@ body {
 }
 #principal{
     display: grid;
-    grid-template-columns: repeat(4, 200px);
+    grid-template-columns: repeat(4, calc(290px*.9));
     grid-template-rows: repeat(1,1fr);
-    column-gap: 5px;
+    column-gap: 10px;
     justify-content: center;
 }
-@media only screen and (max-width:820px){
+@media only screen and (max-width:1110px){
     #principal{
         column-gap: 0px;
         display: flex;
@@ -24,25 +24,28 @@ body {
         align-items: center;
         margin: 10px;
         padding: 0px 10px;
-        flex: 1 1 210px;
+        flex: 1 1 240px;
         padding: 20px;
         text-align: left;
     }
 }
 
 #principal>div{
-    background-color: rgba(165, 154, 154, 0.7);   
+    background-color: rgba(165, 154, 154, 0.7);
 }
 #principal>div>h4{
     text-align: center;
 }
-#principal>div>ul{
-    list-style: decimal;
+.cartas-user{
+    width: calc(76px*.9);
+    margin-left: 5px;
+    margin-right: 5px;
 }
-
-.view-li{
-    visibility: visible;
+.dclasscartas{
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
 }
-.hide-li{
+.hide-img{
     visibility: hidden;
 }
