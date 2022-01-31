@@ -61,13 +61,18 @@ function clickOnCard(event){
     
     const ulCartasJogadas = document.getElementById('cartasjogadas')
     let [idUser,idCarta] = String(event.path[0].id).split('-')
-    idUser= idUser-1
+    idUser = idUser-1
+    const {id,baralho} = users[idUser]
     // Adicionar informação de que a carta selecionada foi jogada
-    users[idUser].baralho[idCarta].jogada = true
+    baralho[idCarta].jogada = true
     
     const li = document.createElement('li')
-    li.innerHTML = `Carta ${users[idUser].baralho[idCarta].nome} de ${users[idUser].baralho[idCarta].naipe.nome}, de user ${users[idUser].id}`
+
+    li.innerHTML = `Carta ${baralho[idCarta].nome} de ${baralho[idCarta].naipe.nome}, de user ${id}`
     
+    cartasJogadas = [...cartasJogadas, baralho[idCarta]]
+    let cartaJogada = cartasJogadas.find(carta => carta.id == baralho[idCarta].id)
+    cartaJogada.user = id
     ulCartasJogadas.appendChild(li)
 }
 
@@ -105,7 +110,7 @@ users.forEach(value => {
 
 // Informação sobre o naipe de trunfo da rounda
 const CartaTrunfo = User1.baralho[0]
-const NaipeRounda = CartaTrunfo.naipe
+const TrunfoRounda = CartaTrunfo.naipe
 
 
 let CartaTrunfoH2 = document.createElement('h2')
@@ -116,7 +121,7 @@ let CartaTrunfoH2 = document.createElement('h2')
 CartaTrunfoH2.innerHTML = `Carta de trunfo: ${CartaTrunfo.nome} de ${CartaTrunfo.naipe.nome}`
 
 let NaipeH2 = document.createElement('h2')
-NaipeH2.innerHTML=`Trunfo: ${NaipeRounda.nome}`
+NaipeH2.innerHTML=`Trunfo: ${TrunfoRounda.nome}`
 
 let divPrincipal = document.createElement('div')
 divPrincipal.setAttribute('id','principal')
@@ -133,12 +138,15 @@ const buttonJogar = document.getElementById('jogar')
 buttonJogar.addEventListener('click', () => {
     jogar(users)
 })
+// Cartas da rodada
+let cartasJogadas = []
+
 /**
  * @param  {Array} listUsers
  */
 async function jogar(listUsers){
-    console.log(listUsers)    
-    console.log(listUsers.length)  
+
+    buttonJogar.classList.toggle('hide-button')
     for(let j = 0;j<listUsers.length;j++){
         let divcart,imgGroup
         await new Promise((resolve,reject)=>{
@@ -179,4 +187,62 @@ async function jogar(listUsers){
             img.removeEventListener('click', clickOnCard)
         })
     }
+
+    const NaipeRodada = cartasJogadas[0].naipe
+    cartasJogadas.map(carta => {
+        if(carta.naipe.id==TrunfoRounda.id){
+            carta.trunfo = true
+            return carta
+        }else{
+            carta.trunfo = false
+            return carta
+        }
+    })
+    // const cartasTrunfo = cartasJogadas.filter(carta => carta.naipe.id==TrunfoRounda.id)
+    const cartasTrunfo = cartasJogadas.filter(carta => carta.trunfo==true)
+    
+    if(cartasTrunfo.length>1 && NaipeRodada.id!=TrunfoRounda.id){
+        /*
+            Trunfo não é o naipe de rodada
+            Mas foi jogado mais de 1 trunfo
+        */
+        let ValorTrunfos = []
+        cartasTrunfo.forEach(carta => {
+            ValorTrunfos = [...ValorTrunfos, carta.valor]
+        })
+        
+        const TrunfoVencedor = ValorTrunfos.reduce((acc,curr) => {
+            return Math.max(acc,curr)
+        })
+
+        const CartaVencedora = cartasTrunfo.filter(carta => carta.valor==TrunfoVencedor)
+        console.log(`User ${CartaVencedora[0].user} ganhou`)
+    }else if(cartasTrunfo.length==1){
+        /*
+            Trunfo não é o naipe de rodada
+            Mas apenas foi jogado 1 trunfo
+        */
+        console.log(`User ${cartasTrunfo[0].user} ganhou`)
+    }else{
+        /*
+            Não foi jogado nenhum trunfo
+            Ou o naipe de rodada é o naipe de trunfo
+        */
+        const CartasNaipeJogado = cartasJogadas.filter(carta => carta.naipe.id == NaipeRodada.id)
+        
+        let ValorCartas = []
+        CartasNaipeJogado.forEach(carta => {
+            ValorCartas = [...ValorCartas, carta.valor]
+        })
+        
+        const ValorCartaVencedora = ValorCartas.reduce((acc,curr) => {
+            return Math.max(acc,curr)
+        })
+
+        const CartaVencedora = CartasNaipeJogado.filter(carta => carta.valor == ValorCartaVencedora)
+        console.log(`User ${CartaVencedora[0].user}`)
+    }
+    
+    
+    buttonJogar.classList.toggle('hide-button')
 }

@@ -45,6 +45,6 @@ body {
     width: calc(76px*.9);
     margin: 3px 5px;
 }
-.hide-img{
+.hide-button{
     visibility: hidden;
 }
