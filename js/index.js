@@ -200,11 +200,10 @@ async function jogar(listUsers){
     })
     // const cartasTrunfo = cartasJogadas.filter(carta => carta.naipe.id==TrunfoRounda.id)
     const cartasTrunfo = cartasJogadas.filter(carta => carta.trunfo==true)
-    
-    if(cartasTrunfo.length>1 && NaipeRodada.id!=TrunfoRounda.id){
+    if(cartasTrunfo.length!=0 && NaipeRodada.id!=TrunfoRounda.id){
         /*
-            Trunfo não é o naipe de rodada
-            Mas foi jogado mais de 1 trunfo
+            Trunfo não é o naipe da rodada
+            Mas jogado pelo menos 1 trunfo
         */
         let ValorTrunfos = []
         cartasTrunfo.forEach(carta => {
@@ -217,16 +216,10 @@ async function jogar(listUsers){
 
         const CartaVencedora = cartasTrunfo.filter(carta => carta.valor==TrunfoVencedor)
         console.log(`User ${CartaVencedora[0].user} ganhou`)
-    }else if(cartasTrunfo.length==1){
-        /*
-            Trunfo não é o naipe de rodada
-            Mas apenas foi jogado 1 trunfo
-        */
-        console.log(`User ${cartasTrunfo[0].user} ganhou`)
     }else{
         /*
             Não foi jogado nenhum trunfo
-            Ou o naipe de rodada é o naipe de trunfo
+            Ou o naipe da rodada é o naipe do trunfo
         */
         const CartasNaipeJogado = cartasJogadas.filter(carta => carta.naipe.id == NaipeRodada.id)
         
