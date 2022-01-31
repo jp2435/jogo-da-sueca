@@ -44,22 +44,37 @@ function distruibuicao(array){
         User4.baralho = [...User4.baralho, cartaUser4]
     }
 }
-
+/**
+ * @param  {Object} user
+ */
 function addSrc(user){
     const {baralho} = user
     baralho.forEach(value => {
         value.src= value.nome=='Ás' ? `/img/${value.naipe.nome}_As.svg` :`/img/${value.naipe.nome}_${value.nome}.svg`
+        value.jogada=false
     })
 }
 
 function clickOnCard(event){
     const img = document.getElementById(event.path[0].id)
-    img.classList.toggle('hide-img')
+    img.parentNode.removeChild(img)
+    
+    const ulCartasJogadas = document.getElementById('cartasjogadas')
+    let [idUser,idCarta] = String(event.path[0].id).split('-')
+    idUser= idUser-1
+    // Adicionar informação de que a carta selecionada foi jogada
+    users[idUser].baralho[idCarta].jogada = true
+    
+    const li = document.createElement('li')
+    li.innerHTML = `Carta ${users[idUser].baralho[idCarta].nome} de ${users[idUser].baralho[idCarta].naipe.nome}, de user ${users[idUser].id}`
+    
+    ulCartasJogadas.appendChild(li)
 }
 
 // Para criação da div onde vai ser representado as cartas
 function CreateUserDiv(user){
     let divUser = document.createElement('div')
+    divUser.setAttribute('id', `user-${user.id}`)
     let UserH4 = document.createElement('h4')
     UserH4.innerHTML=`Jogador ${user.id}`
     divUser.appendChild(UserH4)
@@ -69,10 +84,9 @@ function CreateUserDiv(user){
 
     for(let i=0;i<baralho.length;i++){
         let img = document.createElement('img')
-        img.src=baralho[i].src
+        img.src='/img/back_card.svg'
         img.setAttribute('id', `${user.id}-${i}`)
         img.setAttribute('class', 'carta-user')
-        img.addEventListener('click',clickOnCard)
         divCartas.appendChild(img)
         divUser.appendChild(divCartas)
     }
@@ -84,6 +98,7 @@ function CreateUserDiv(user){
 baralhamento(BaralhoRounda)
 distruibuicao(BaralhoRounda)
 
+// Adição do {src} as cartas de cada user
 users.forEach(value => {
     addSrc(value)
 })
@@ -96,7 +111,7 @@ const NaipeRounda = CartaTrunfo.naipe
 let CartaTrunfoH2 = document.createElement('h2')
 /**
 * CartaTrunfo.naipe.nome == NaipeRounda.nome
-* @returns {boolean} True
+* @returns {Boolean} True
 */
 CartaTrunfoH2.innerHTML = `Carta de trunfo: ${CartaTrunfo.nome} de ${CartaTrunfo.naipe.nome}`
 
@@ -106,11 +121,62 @@ NaipeH2.innerHTML=`Trunfo: ${NaipeRounda.nome}`
 let divPrincipal = document.createElement('div')
 divPrincipal.setAttribute('id','principal')
 
-CreateUserDiv(User1)
-CreateUserDiv(User2)
-CreateUserDiv(User3)
-CreateUserDiv(User4)
+users.forEach(user => CreateUserDiv(user))
 
 document.body.appendChild(CartaTrunfoH2)
 document.body.appendChild(NaipeH2)
 document.body.appendChild(divPrincipal)
+
+
+// Função de jogar
+const buttonJogar = document.getElementById('jogar')
+buttonJogar.addEventListener('click', () => {
+    jogar(users)
+})
+/**
+ * @param  {Array} listUsers
+ */
+async function jogar(listUsers){
+    console.log(listUsers)    
+    console.log(listUsers.length)  
+    for(let j = 0;j<listUsers.length;j++){
+        let divcart,imgGroup
+        await new Promise((resolve,reject)=>{
+        /*
+            Vai analisar se existe alguma alteração
+            Mais exatamente se ocorrer uma eliminação de um elemento
+            E vai aguardar que ocorra essa alteração
+        */
+        divcart = document.querySelector(`#user-${listUsers[j].id} .conjunto-cartas`)
+        imgGroup = divcart.childNodes
+        
+        /*
+            Escolher(filtrando) as cartas que não estam jogadas
+            Depois adicionar a {src} e o {Listener}
+        */
+        const cartasNaoJogadas = listUsers[j].baralho.filter(carta => !carta.jogada)
+        for(let i=0;i<cartasNaoJogadas.length;i++){
+            imgGroup[i].src=cartasNaoJogadas[i].src
+            imgGroup[i].addEventListener('click', clickOnCard)
+        }
+    
+        const config = {
+            childList: true,
+            subtree: true
+        }
+        let callback = function(mutationList, observer){
+            console.log('Carta eliminada')
+            const [userID, cartaID] = mutationList[0].removedNodes[0].id.split('-')
+            
+            resolve()
+        }
+        const observer = new MutationObserver(callback)
+        observer.observe(divcart, config)
+        
+        })
+        imgGroup.forEach(img => {
+            img.src='/img/back_card.svg'
+            img.removeEventListener('click', clickOnCard)
+        })
+    }
+}
