@@ -50,7 +50,7 @@ function distruibuicao(array){
 function addSrc(user){
     const {baralho} = user
     baralho.forEach(value => {
-        value.src= value.nome=='Ás' ? `/img/${value.naipe.nome}_As.svg` :`/img/${value.naipe.nome}_${value.nome}.svg`
+        value.src= value.nome=='Ás' ? `./img/${value.naipe.nome}_As.svg` :`./img/${value.naipe.nome}_${value.nome}.svg`
         value.jogada=false
     })
 }
@@ -89,7 +89,7 @@ function CreateUserDiv(user){
 
     for(let i=0;i<baralho.length;i++){
         let img = document.createElement('img')
-        img.src='/img/back_card.svg'
+        img.src='./img/back_card.svg'
         img.setAttribute('id', `${user.id}-${i}`)
         img.setAttribute('class', 'carta-user')
         divCartas.appendChild(img)
@@ -183,7 +183,7 @@ async function jogar(listUsers){
         
         })
         imgGroup.forEach(img => {
-            img.src='/img/back_card.svg'
+            img.src='./img/back_card.svg'
             img.removeEventListener('click', clickOnCard)
         })
     }
@@ -198,12 +198,12 @@ async function jogar(listUsers){
             return carta
         }
     })
-    // const cartasTrunfo = cartasJogadas.filter(carta => carta.naipe.id==TrunfoRounda.id)
+
     const cartasTrunfo = cartasJogadas.filter(carta => carta.trunfo==true)
     if(cartasTrunfo.length!=0 && NaipeRodada.id!=TrunfoRounda.id){
         /*
             Trunfo não é o naipe da rodada
-            Mas jogado pelo menos 1 trunfo
+            Mas foi jogado pelo menos 1 trunfo
         */
         let ValorTrunfos = []
         cartasTrunfo.forEach(carta => {
