@@ -14,6 +14,8 @@ const users = [
     User4
 ]
 
+const ulCartasJogadas = document.getElementById('cartasjogadas')
+
 // Criação da variável do baralho para realizar as alterações
 let BaralhoRounda = []
 
@@ -59,7 +61,6 @@ function clickOnCard(event){
     const img = document.getElementById(event.path[0].id)
     img.parentNode.removeChild(img)
     
-    const ulCartasJogadas = document.getElementById('cartasjogadas')
     let [idUser,idCarta] = String(event.path[0].id).split('-')
     idUser = idUser-1
     const {id,baralho} = users[idUser]
@@ -138,6 +139,18 @@ const buttonJogar = document.getElementById('jogar')
 buttonJogar.addEventListener('click', () => {
     jogar(users)
 })
+
+function tempoEspera(lastUser=false){
+    if(lastUser){
+        return undefined
+    }else{
+        return new Promise(resolve => {
+            setTimeout(()=>{
+                resolve()
+            }, 1500)
+        })
+    }
+}
 // Cartas da rodada
 let cartasJogadas = []
 
@@ -186,6 +199,11 @@ async function jogar(listUsers){
             img.src='./img/back_card.svg'
             img.removeEventListener('click', clickOnCard)
         })
+        if(j==3){
+            await tempoEspera(true)
+        }else{
+            await tempoEspera()
+        }
     }
 
     const NaipeRodada = cartasJogadas[0].naipe
@@ -233,8 +251,21 @@ async function jogar(listUsers){
         })
 
         const CartaVencedora = CartasNaipeJogado.filter(carta => carta.valor == ValorCartaVencedora)
-        console.log(`User ${CartaVencedora[0].user}`)
+        console.log(`User ${CartaVencedora[0].user} ganhou`)
     }
+
+    /*
+        Eliminação das cartas inseridas durante a rodada
+    */
+    const liNodes = ulCartasJogadas.childNodes
+    await new Promise(resolve => {
+        setTimeout(()=> {
+            for(let i = 3;i>=0;i--){
+                liNodes[i].remove()
+            }
+            resolve()
+        },2000)
+    })
     
     
     buttonJogar.classList.toggle('hide-button')
