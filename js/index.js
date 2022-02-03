@@ -290,6 +290,9 @@ async function jogar(listUsers){
         AtribuicaoPontos(CartaVencedora[0].user,cartasJogadas)
     }
 
+    // Renovação das cartas de rodada
+    cartasJogadas = []
+
     /*
         Eliminação das cartas inseridas durante a rodada
     */
