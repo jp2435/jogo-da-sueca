@@ -14,6 +14,17 @@ const users = [
     User4
 ]
 
+const Duplas = [
+    {
+        users: [User1,User3],
+        pontos: 0
+    },
+    {
+        users: [User2,User4],
+        pontos: 0
+    }
+]
+
 const ulCartasJogadas = document.getElementById('cartasjogadas')
 
 // Criação da variável do baralho para realizar as alterações
@@ -100,13 +111,25 @@ function CreateUserDiv(user){
     divPrincipal.appendChild(divUser)
 }
 
+// Para associar a dupla do user
+function UserDupla(user){
+    if(user.id == 1 || user.id == 3){
+        user.dupla=0
+    }else{
+        user.dupla=1
+    }
+}
 //Neste momento vai-se baralhar e distruibuir as cartas
 baralhamento(BaralhoRounda)
 distruibuicao(BaralhoRounda)
 
-// Adição do {src} as cartas de cada user
+/*
+    Adição do {src} as cartas de cada user
+    E adição da dupla de cada user
+*/
 users.forEach(value => {
     addSrc(value)
+    UserDupla(value)
 })
 
 // Informação sobre o naipe de trunfo da rounda
@@ -150,6 +173,15 @@ function tempoEspera(lastUser=false){
             }, 1500)
         })
     }
+}
+
+function AtribuicaoPontos(userID,CartasRodada){
+    const duplaId = users[userID-1].dupla
+    const dupla = Duplas[duplaId]
+
+    CartasRodada.forEach(carta => {
+        dupla.pontos = dupla.pontos + carta.pontos
+    })
 }
 // Cartas da rodada
 let cartasJogadas = []
@@ -234,6 +266,8 @@ async function jogar(listUsers){
 
         const CartaVencedora = cartasTrunfo.filter(carta => carta.valor==TrunfoVencedor)
         console.log(`User ${CartaVencedora[0].user} ganhou`)
+        alert(`User ${CartaVencedora[0].user} ganhou`)
+        AtribuicaoPontos(CartaVencedora[0].user,cartasJogadas)
     }else{
         /*
             Não foi jogado nenhum trunfo
@@ -252,6 +286,8 @@ async function jogar(listUsers){
 
         const CartaVencedora = CartasNaipeJogado.filter(carta => carta.valor == ValorCartaVencedora)
         console.log(`User ${CartaVencedora[0].user} ganhou`)
+        alert(`User ${CartaVencedora[0].user} ganhou`)
+        AtribuicaoPontos(CartaVencedora[0].user,cartasJogadas)
     }
 
     /*
