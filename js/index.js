@@ -17,11 +17,13 @@ const users = [
 const Duplas = [
     {
         users: [User1,User3],
-        pontos: 0
+        pontos: 0,
+        id: 0
     },
     {
         users: [User2,User4],
-        pontos: 0
+        pontos: 0,
+        id: 1
     }
 ]
 
@@ -192,120 +194,131 @@ let cartasJogadas = []
 async function jogar(listUsers){
 
     buttonJogar.classList.toggle('hide-button')
-    for(let j = 0;j<listUsers.length;j++){
-        let divcart,imgGroup
-        await new Promise((resolve,reject)=>{
-        /*
-            Vai analisar se existe alguma alteração
-            Mais exatamente se ocorrer uma eliminação de um elemento
-            E vai aguardar que ocorra essa alteração
-        */
-        divcart = document.querySelector(`#user-${listUsers[j].id} .conjunto-cartas`)
-        imgGroup = divcart.childNodes
-        
-        /*
-            Escolher(filtrando) as cartas que não estam jogadas
-            Depois adicionar a {src} e o {Listener}
-        */
-        const cartasNaoJogadas = listUsers[j].baralho.filter(carta => !carta.jogada)
-        for(let i=0;i<cartasNaoJogadas.length;i++){
-            imgGroup[i].src=cartasNaoJogadas[i].src
-            imgGroup[i].addEventListener('click', clickOnCard)
-        }
-    
-        const config = {
-            childList: true,
-            subtree: true
-        }
-        let callback = function(mutationList, observer){
-            console.log('Carta eliminada')
-            const [userID, cartaID] = mutationList[0].removedNodes[0].id.split('-')
+    for(let rodada = 0;rodada<10;rodada++){
+        for(let j = 0;j<listUsers.length;j++){
+            let divcart,imgGroup
+            await new Promise((resolve,reject)=>{
+            /*
+                Vai analisar se existe alguma alteração
+                Mais exatamente se ocorrer uma eliminação de um elemento
+                E vai aguardar que ocorra essa alteração
+            */
+            divcart = document.querySelector(`#user-${listUsers[j].id} .conjunto-cartas`)
+            imgGroup = divcart.childNodes
             
-            resolve()
-        }
-        const observer = new MutationObserver(callback)
-        observer.observe(divcart, config)
-        
-        })
-        imgGroup.forEach(img => {
-            img.src='./img/back_card.svg'
-            img.removeEventListener('click', clickOnCard)
-        })
-        if(j==3){
-            await tempoEspera(true)
-        }else{
-            await tempoEspera()
-        }
-    }
-
-    const NaipeRodada = cartasJogadas[0].naipe
-    cartasJogadas.map(carta => {
-        if(carta.naipe.id==TrunfoRounda.id){
-            carta.trunfo = true
-            return carta
-        }else{
-            carta.trunfo = false
-            return carta
-        }
-    })
-
-    const cartasTrunfo = cartasJogadas.filter(carta => carta.trunfo==true)
-    if(cartasTrunfo.length!=0 && NaipeRodada.id!=TrunfoRounda.id){
-        /*
-            Trunfo não é o naipe da rodada
-            Mas foi jogado pelo menos 1 trunfo
-        */
-        let ValorTrunfos = []
-        cartasTrunfo.forEach(carta => {
-            ValorTrunfos = [...ValorTrunfos, carta.valor]
-        })
-        
-        const TrunfoVencedor = ValorTrunfos.reduce((acc,curr) => {
-            return Math.max(acc,curr)
-        })
-
-        const CartaVencedora = cartasTrunfo.filter(carta => carta.valor==TrunfoVencedor)
-        console.log(`User ${CartaVencedora[0].user} ganhou`)
-        alert(`User ${CartaVencedora[0].user} ganhou`)
-        AtribuicaoPontos(CartaVencedora[0].user,cartasJogadas)
-    }else{
-        /*
-            Não foi jogado nenhum trunfo
-            Ou o naipe da rodada é o naipe do trunfo
-        */
-        const CartasNaipeJogado = cartasJogadas.filter(carta => carta.naipe.id == NaipeRodada.id)
-        
-        let ValorCartas = []
-        CartasNaipeJogado.forEach(carta => {
-            ValorCartas = [...ValorCartas, carta.valor]
-        })
-        
-        const ValorCartaVencedora = ValorCartas.reduce((acc,curr) => {
-            return Math.max(acc,curr)
-        })
-
-        const CartaVencedora = CartasNaipeJogado.filter(carta => carta.valor == ValorCartaVencedora)
-        console.log(`User ${CartaVencedora[0].user} ganhou`)
-        alert(`User ${CartaVencedora[0].user} ganhou`)
-        AtribuicaoPontos(CartaVencedora[0].user,cartasJogadas)
-    }
-
-    // Renovação das cartas de rodada
-    cartasJogadas = []
-
-    /*
-        Eliminação das cartas inseridas durante a rodada
-    */
-    const liNodes = ulCartasJogadas.childNodes
-    await new Promise(resolve => {
-        setTimeout(()=> {
-            for(let i = 3;i>=0;i--){
-                liNodes[i].remove()
+            /*
+                Escolher(filtrando) as cartas que não estam jogadas
+                Depois adicionar a {src} e o {Listener}
+            */
+            const cartasNaoJogadas = listUsers[j].baralho.filter(carta => !carta.jogada)
+            for(let i=0;i<cartasNaoJogadas.length;i++){
+                imgGroup[i].src=cartasNaoJogadas[i].src
+                imgGroup[i].addEventListener('click', clickOnCard)
             }
-            resolve()
-        },2000)
-    })
-    
-    
+        
+            const config = {
+                childList: true,
+                subtree: true
+            }
+            let callback = function(mutationList, observer){
+                const [userID, cartaID] = mutationList[0].removedNodes[0].id.split('-')
+                
+                resolve()
+            }
+            const observer = new MutationObserver(callback)
+            observer.observe(divcart, config)
+            
+            })
+            imgGroup.forEach(img => {
+                img.src='./img/back_card.svg'
+                img.removeEventListener('click', clickOnCard)
+            })
+            if(j==3){
+                await tempoEspera(true)
+            }else{
+                await tempoEspera()
+            }
+        }
+
+        const NaipeRodada = cartasJogadas[0].naipe
+        cartasJogadas.map(carta => {
+            if(carta.naipe.id==TrunfoRounda.id){
+                carta.trunfo = true
+                return carta
+            }else{
+                carta.trunfo = false
+                return carta
+            }
+        })
+
+        const cartasTrunfo = cartasJogadas.filter(carta => carta.trunfo==true)
+        if(cartasTrunfo.length!=0 && NaipeRodada.id!=TrunfoRounda.id){
+            /*
+                Trunfo não é o naipe da rodada
+                Mas foi jogado pelo menos 1 trunfo
+            */
+            let ValorTrunfos = []
+            cartasTrunfo.forEach(carta => {
+                ValorTrunfos = [...ValorTrunfos, carta.valor]
+            })
+            
+            const TrunfoVencedor = ValorTrunfos.reduce((acc,curr) => {
+                return Math.max(acc,curr)
+            })
+
+            const CartaVencedora = cartasTrunfo.filter(carta => carta.valor==TrunfoVencedor)
+            console.log(`User ${CartaVencedora[0].user} ganhou`)
+            alert(`User ${CartaVencedora[0].user} ganhou`)
+            AtribuicaoPontos(CartaVencedora[0].user,cartasJogadas)
+        }else{
+            /*
+                Não foi jogado nenhum trunfo
+                Ou o naipe da rodada é o naipe do trunfo
+            */
+            const CartasNaipeJogado = cartasJogadas.filter(carta => carta.naipe.id == NaipeRodada.id)
+            
+            let ValorCartas = []
+            CartasNaipeJogado.forEach(carta => {
+                ValorCartas = [...ValorCartas, carta.valor]
+            })
+            
+            const ValorCartaVencedora = ValorCartas.reduce((acc,curr) => {
+                return Math.max(acc,curr)
+            })
+
+            const CartaVencedora = CartasNaipeJogado.filter(carta => carta.valor == ValorCartaVencedora)
+            console.log(`User ${CartaVencedora[0].user} ganhou`)
+            alert(`User ${CartaVencedora[0].user} ganhou`)
+            AtribuicaoPontos(CartaVencedora[0].user,cartasJogadas)
+        }
+
+        // Renovação das cartas de rodada
+        cartasJogadas = []
+
+        /*
+            Eliminação das cartas inseridas durante a rodada
+        */
+        const liNodes = ulCartasJogadas.childNodes
+        await new Promise(resolve => {
+            setTimeout(()=> {
+                for(let i = 3;i>=0;i--){
+                    liNodes[i].remove()
+                }
+                resolve()
+            },2000)
+        })
+    }
+    console.log(Duplas)
+    // Função para indicar a dupla vencedora da rounda
+    const DuplaVencedoraDeRounda = ()=>{
+        const pontosDup1 = Duplas[0].pontos
+        const pontosDup2 = Duplas[1].pontos
+        const MaiorValorPontos = Math.max(pontosDup1,pontosDup2)
+        const DuplaVencedora = Duplas.filter(dulpa => dulpa.pontos == MaiorValorPontos)
+
+        const {id,pontos} = DuplaVencedora[0]
+        console.log(`Dupla ${id} ganhou com ${pontos}`)
+    }
+    DuplaVencedoraDeRounda()
     buttonJogar.classList.toggle('hide-button')
 }
