@@ -18,15 +18,18 @@ const Duplas = [
     {
         users: [User1,User3],
         pontos: 0,
-        id: 0
+        id: 0,
+        roundas: 0
     },
     {
         users: [User2,User4],
         pontos: 0,
-        id: 1
+        id: 1,
+        roundas: 0
     }
 ]
 
+const DivJogo = document.getElementById('jogo')
 const ulCartasJogadas = document.getElementById('cartasjogadas')
 
 // Criação da variável do baralho para realizar as alterações
@@ -91,7 +94,7 @@ function clickOnCard(event){
 }
 
 // Para criação da div onde vai ser representado as cartas
-function CreateUserDiv(user){
+function CreateUserDiv(user,divPrincipal){
     let divUser = document.createElement('div')
     divUser.setAttribute('id', `user-${user.id}`)
     let UserH4 = document.createElement('h4')
@@ -121,43 +124,6 @@ function UserDupla(user){
         user.dupla=1
     }
 }
-//Neste momento vai-se baralhar e distruibuir as cartas
-baralhamento(BaralhoRounda)
-distruibuicao(BaralhoRounda)
-
-/*
-    Adição do {src} as cartas de cada user
-    E adição da dupla de cada user
-*/
-users.forEach(value => {
-    addSrc(value)
-    UserDupla(value)
-})
-
-// Informação sobre o naipe de trunfo da rounda
-const CartaTrunfo = User1.baralho[0]
-const TrunfoRounda = CartaTrunfo.naipe
-
-
-let CartaTrunfoH2 = document.createElement('h2')
-/**
-* CartaTrunfo.naipe.nome == NaipeRounda.nome
-* @returns {Boolean} True
-*/
-CartaTrunfoH2.innerHTML = `Carta de trunfo: ${CartaTrunfo.nome} de ${CartaTrunfo.naipe.nome}`
-
-let NaipeH2 = document.createElement('h2')
-NaipeH2.innerHTML=`Trunfo: ${TrunfoRounda.nome}`
-
-let divPrincipal = document.createElement('div')
-divPrincipal.setAttribute('id','principal')
-
-users.forEach(user => CreateUserDiv(user))
-
-document.body.appendChild(CartaTrunfoH2)
-document.body.appendChild(NaipeH2)
-document.body.appendChild(divPrincipal)
-
 
 // Função de jogar
 const buttonJogar = document.getElementById('jogar')
@@ -185,6 +151,51 @@ function AtribuicaoPontos(userID,CartasRodada){
         dupla.pontos = dupla.pontos + carta.pontos
     })
 }
+
+/*
+    Função da criação do jogo
+*/
+function CriarJogo(){
+    //Neste momento vai-se baralhar e distruibuir as cartas
+    baralhamento(BaralhoRounda)
+    distruibuicao(BaralhoRounda)
+    
+    /*
+        Adição do {src} as cartas de cada user
+        E adição da dupla de cada user
+    */
+    users.forEach(value => {
+        addSrc(value)
+        UserDupla(value)
+    })
+    // Informação sobre o naipe de trunfo da rounda
+    const CartaTrunfo = User1.baralho[0]
+    const TrunfoRounda = CartaTrunfo.naipe
+
+
+    let CartaTrunfoH2 = document.createElement('h2')
+    /**
+    * CartaTrunfo.naipe.nome == NaipeRounda.nome
+    * @returns {Boolean} True
+    */
+    CartaTrunfoH2.innerHTML = `Carta de trunfo: ${CartaTrunfo.nome} de ${CartaTrunfo.naipe.nome}`
+
+    let NaipeH2 = document.createElement('h2')
+    NaipeH2.innerHTML=`Trunfo: ${TrunfoRounda.nome}`
+
+    let divPrincipal = document.createElement('div')
+    divPrincipal.setAttribute('id','principal')
+
+    users.forEach(user => CreateUserDiv(user,divPrincipal))
+
+    DivJogo.appendChild(CartaTrunfoH2)
+    DivJogo.appendChild(NaipeH2)
+    DivJogo.appendChild(divPrincipal)
+
+
+    return [CartaTrunfo,TrunfoRounda,divPrincipal]
+}
+
 // Cartas da rodada
 let cartasJogadas = []
 
@@ -192,8 +203,9 @@ let cartasJogadas = []
  * @param  {Array} listUsers
  */
 async function jogar(listUsers){
-
+    const [CartaTrunfo,TrunfoRounda,divPrincipal] = CriarJogo()
     buttonJogar.classList.toggle('hide-button')
+
     for(let rodada = 0;rodada<10;rodada++){
         for(let j = 0;j<listUsers.length;j++){
             let divcart,imgGroup
@@ -251,6 +263,9 @@ async function jogar(listUsers){
             }
         })
 
+        /*
+            Análise do vencedor da rodada
+        */
         const cartasTrunfo = cartasJogadas.filter(carta => carta.trunfo==true)
         if(cartasTrunfo.length!=0 && NaipeRodada.id!=TrunfoRounda.id){
             /*
@@ -308,17 +323,65 @@ async function jogar(listUsers){
             },2000)
         })
     }
-    console.log(Duplas)
+
     // Função para indicar a dupla vencedora da rounda
     const DuplaVencedoraDeRounda = ()=>{
         const pontosDup1 = Duplas[0].pontos
         const pontosDup2 = Duplas[1].pontos
-        const MaiorValorPontos = Math.max(pontosDup1,pontosDup2)
-        const DuplaVencedora = Duplas.filter(dulpa => dulpa.pontos == MaiorValorPontos)
 
-        const {id,pontos} = DuplaVencedora[0]
-        console.log(`Dupla ${id} ganhou com ${pontos}`)
+        if(pontosDup1 == 60){
+            console.log('Empate entre as duplas')
+            Duplas[0].roundas+=1
+            Duplas[1].roundas+=1
+        }else{
+            const MaiorValorPontos = Math.max(pontosDup1,pontosDup2)
+            const DuplaVencedora = Duplas.filter(dulpa => dulpa.pontos == MaiorValorPontos)
+            
+            const {id,pontos} = DuplaVencedora[0]
+            console.log(`Dupla ${id} ganhou com ${pontos}`)
+            if(MaiorValorPontos>=61 && MaiorValorPontos<=89){
+                Duplas[id].roundas +=1
+            }else if(MaiorValorPontos>=90 && MaiorValorPontos<=119){
+                Duplas[id].roundas +=2
+            }else{
+                Duplas[id].roundas +=4
+            }
+        }
     }
     DuplaVencedoraDeRounda()
+
+    /*
+        Remoção dos pontos para começar nova rounda
+        E remoção dos baralhos de cada user
+    */
+    Duplas.forEach(dupla => {dupla.pontos = 0})
+    console.log(Duplas)
+    
+    // Verificação se alguma dupla já alcançou as 4 roundas
+    for(let k =0;k<Duplas.length;k++){
+        if(Duplas[k].roundas>=4){
+            return VitoriaFinal(Duplas[k].id)
+        }else{
+            let firstElement = DivJogo.firstElementChild
+            while(firstElement){
+                firstElement.remove()
+                firstElement = DivJogo.firstElementChild
+            }
+            console.log(cartasJogadas)
+            users.forEach(user => {
+                user.baralho = []
+            })
+            BaralhoCompleto.forEach(value => {
+                BaralhoRounda.push(value)
+            })
+            return jogar(users)
+        }
+    }
+
     buttonJogar.classList.toggle('hide-button')
+}
+
+
+function VitoriaFinal(IdDupla){
+    console.log(`Vítória da ${Duplas[IdDupla].id}`)
 }
