@@ -212,6 +212,7 @@ async function jogar(listUsers){
         index 1, representa o user2
         index 2, representa o user3
         index 3, representa o user4
+        erro no merge
     */
 
     for(let rodada = 0;rodada<10;rodada++){
