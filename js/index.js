@@ -341,10 +341,6 @@ async function jogar(listUsers){
         while(userVencIDIndex!==ordemRodada[0]){
             ordemRodada.push(ordemRodada.splice(0,1)[0])
         }
-        /*
-            Indicar que já aconteceu a primeira rodada
-        */
-        PrimeiraRodada=false
     }
 
     // Função para indicar a dupla vencedora da rounda
