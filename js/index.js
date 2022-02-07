@@ -148,7 +148,7 @@ function AtribuicaoPontos(userID,CartasRodada){
     const dupla = Duplas[duplaId]
 
     CartasRodada.forEach(carta => {
-        dupla.pontos = dupla.pontos + carta.pontos
+        dupla.pontos += carta.pontos
     })
 }
 
@@ -205,9 +205,18 @@ let cartasJogadas = []
 async function jogar(listUsers){
     const [CartaTrunfo,TrunfoRounda,divPrincipal] = CriarJogo()
     buttonJogar.classList.toggle('hide-button')
+    
+    let ordemRodada = [0,1,2,3]
+    /*
+        index 0, representa o user1
+        index 1, representa o user2
+        index 2, representa o user3
+        index 3, representa o user4
+    */
 
     for(let rodada = 0;rodada<10;rodada++){
-        for(let j = 0;j<listUsers.length;j++){
+        let userVencIdIndex
+        for(let j = 0;j<ordemRodada.length;j++){
             let divcart,imgGroup
             await new Promise((resolve,reject)=>{
             /*
@@ -215,14 +224,14 @@ async function jogar(listUsers){
                 Mais exatamente se ocorrer uma eliminação de um elemento
                 E vai aguardar que ocorra essa alteração
             */
-            divcart = document.querySelector(`#user-${listUsers[j].id} .conjunto-cartas`)
+            divcart = document.querySelector(`#user-${listUsers[ordemRodada[j]].id} .conjunto-cartas`)
             imgGroup = divcart.childNodes
             
             /*
                 Escolher(filtrando) as cartas que não estam jogadas
                 Depois adicionar a {src} e o {Listener}
             */
-            const cartasNaoJogadas = listUsers[j].baralho.filter(carta => !carta.jogada)
+            const cartasNaoJogadas = listUsers[ordemRodada[j]].baralho.filter(carta => !carta.jogada)
             for(let i=0;i<cartasNaoJogadas.length;i++){
                 imgGroup[i].src=cartasNaoJogadas[i].src
                 imgGroup[i].addEventListener('click', clickOnCard)
@@ -285,6 +294,7 @@ async function jogar(listUsers){
             console.log(`User ${CartaVencedora[0].user} ganhou`)
             alert(`User ${CartaVencedora[0].user} ganhou`)
             AtribuicaoPontos(CartaVencedora[0].user,cartasJogadas)
+            userVencIdIndex = CartaVencedora[0].user-1
         }else{
             /*
                 Não foi jogado nenhum trunfo
@@ -305,6 +315,7 @@ async function jogar(listUsers){
             console.log(`User ${CartaVencedora[0].user} ganhou`)
             alert(`User ${CartaVencedora[0].user} ganhou`)
             AtribuicaoPontos(CartaVencedora[0].user,cartasJogadas)
+            userVencIdIndex = CartaVencedora[0].user-1
         }
 
         // Renovação das cartas de rodada
@@ -322,6 +333,18 @@ async function jogar(listUsers){
                 resolve()
             },2000)
         })
+        
+        /*
+            Ordem da próxima rodada, em relação ao vencedor da rodada atual
+        */
+        while(userVencIdIndex!==ordemRodada[0]){
+            ordemRodada.push(ordemRodada.splice(0,1)[0])
+        }
+
+        /*
+            Indicar que já aconteceu a primeira rodada
+        */
+        PrimeiraRodada=false
     }
 
     // Função para indicar a dupla vencedora da rounda
