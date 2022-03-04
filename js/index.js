@@ -30,7 +30,6 @@ const Duplas = [
 ]
 
 const DivJogo = document.getElementById('jogo')
-const ulCartasJogadas = document.getElementById('cartasjogadas')
 
 // Criação da variável do baralho para realizar as alterações
 let BaralhoRounda = []
@@ -83,23 +82,69 @@ function clickOnCard(event){
     // Adicionar informação de que a carta selecionada foi jogada
     baralho[idCarta].jogada = true
     
-    const li = document.createElement('li')
-
-    li.innerHTML = `Carta ${baralho[idCarta].nome} de ${baralho[idCarta].naipe.nome}, de user ${id}`
-    
     cartasJogadas = [...cartasJogadas, baralho[idCarta]]
     let cartaJogada = cartasJogadas.find(carta => carta.id == baralho[idCarta].id)
     cartaJogada.user = id
-    ulCartasJogadas.appendChild(li)
+    CardOnCanvas(id,baralho[idCarta].src)
+}
+function ClearCanvas(player){
+    const canvas = document.querySelector(`[canvas-${player}]`)
+    const ctx = canvas.getContext('2d')
+
+    let x = 69
+    let y = (x*244)/169
+    ctx.clearRect(90,30,x,y)
+}
+async function CardOnCanvas(player,src='./img/back_card.svg'){
+    const divRounda = document.getElementById('rounda')
+    const canvasPlayer = document.querySelector(`[canvas-${player}`)
+
+    if(canvasPlayer){
+        const ctx = canvasPlayer.getContext('2d')
+        let x = 69
+        let y = (x*244)/169
+
+        let img = new Image();
+        img.decoding = 'sync'
+        img.src = src
+        img.onload = function(){
+            ctx.drawImage(img,90,30,x,y)
+        }
+        await tempoEspera(false, 500)
+    }else{
+        const canvas = document.createElement('canvas')
+        canvas.setAttribute(`canvas-${player}`,'')
+        canvas.setAttribute('class','canvas')
+        const ctx = canvas.getContext('2d');
+
+        let img = new Image();
+        img.decoding = 'sync'
+        img.src = src
+
+        let x = 69
+        let y = (x*244)/169
+        img.onload = function(){
+            ctx.drawImage(img,90,30,x,y)
+        }
+        ctx.font = 'italic 15px \'Roboto\''
+        ctx.textAlign='center'
+        ctx.fillStyle='#455678'
+        ctx.fillText(`Jogador ${player}`,40,15)
+
+        divRounda.append(canvas)
+    }
+    return null
 }
 
 // Para criação da div onde vai ser representado as cartas
 function CreateUserDiv(user,divPrincipal){
     let divUser = document.createElement('div')
     divUser.setAttribute('id', `user-${user.id}`)
+
     let UserH4 = document.createElement('h4')
     UserH4.innerHTML=`Jogador ${user.id}`
     divUser.appendChild(UserH4)
+
     let divCartas = document.createElement('div')
     divCartas.setAttribute('class', 'conjunto-cartas')
     const {baralho} = user
@@ -112,7 +157,6 @@ function CreateUserDiv(user,divPrincipal){
         divCartas.appendChild(img)
         divUser.appendChild(divCartas)
     }
-
     divPrincipal.appendChild(divUser)
 }
 
@@ -128,17 +172,17 @@ function UserDupla(user){
 // Função de jogar
 const buttonJogar = document.getElementById('jogar')
 buttonJogar.addEventListener('click', () => {
-    jogar(users)
+    jogar(users,false)
 })
 
-function tempoEspera(lastUser=false){
+function tempoEspera(lastUser=false,time=1500){
     if(lastUser){
         return undefined
     }else{
         return new Promise(resolve => {
             setTimeout(()=>{
                 resolve()
-            }, 1500)
+            }, time)
         })
     }
 }
@@ -202,10 +246,22 @@ let cartasJogadas = []
 /**
  * @param  {Array} listUsers
  */
-async function jogar(listUsers){
+async function jogar(listUsers,button){
     const [CartaTrunfo,TrunfoRounda,divPrincipal] = CriarJogo()
-    buttonJogar.classList.toggle('hide-button')
-    
+    const h2DivVenc = document.querySelector('#vencedores h2')
+    const pDivVenc = document.querySelector('#vencedores p')
+    console.log(h2DivVenc)
+    if(h2DivVenc){
+        await tempoEspera()
+        h2DivVenc.remove()
+        pDivVenc.remove()
+    }
+    if(button){
+        buttonJogar.style.visibility='visible'
+    }else{
+        buttonJogar.style.visibility='hidden'
+    }
+
     let ordemRodada = [0,1,2,3]
     /*
         index 0, representa o user1
@@ -292,6 +348,12 @@ async function jogar(listUsers){
 
             const CartaVencedora = cartasTrunfo.filter(carta => carta.valor==TrunfoVencedor)
             console.log(`User ${CartaVencedora[0].user} ganhou`)
+
+            await tempoEspera(false,800)
+            users.forEach(user => {
+                ClearCanvas(user.id)
+            })
+
             alert(`User ${CartaVencedora[0].user} ganhou`)
             AtribuicaoPontos(CartaVencedora[0].user,cartasJogadas)
             userVencIDIndex = CartaVencedora[0].user-1
@@ -306,58 +368,55 @@ async function jogar(listUsers){
             CartasNaipeJogado.forEach(carta => {
                 ValorCartas = [...ValorCartas, carta.valor]
             })
-            
+
             const ValorCartaVencedora = ValorCartas.reduce((acc,curr) => {
                 return Math.max(acc,curr)
             })
 
             const CartaVencedora = CartasNaipeJogado.filter(carta => carta.valor == ValorCartaVencedora)
             console.log(`User ${CartaVencedora[0].user} ganhou`)
+            
+            await tempoEspera(false,800)
+            users.forEach(user => {
+                ClearCanvas(user.id)
+            })
+
             alert(`User ${CartaVencedora[0].user} ganhou`)
             AtribuicaoPontos(CartaVencedora[0].user,cartasJogadas)
             userVencIDIndex = CartaVencedora[0].user-1
         }
-
         // Renovação das cartas de rodada
         cartasJogadas = []
-
-        /*
-            Eliminação das cartas inseridas durante a rodada
-        */
-        const liNodes = ulCartasJogadas.childNodes
-        await new Promise(resolve => {
-            setTimeout(()=> {
-                for(let i = 3;i>=0;i--){
-                    liNodes[i].remove()
-                }
-                resolve()
-            },2000)
-        })
         
         /*
             Ordem da próxima rodada, em relação ao vencedor da rodada atual
         */
-
         while(userVencIDIndex!==ordemRodada[0]){
             ordemRodada.push(ordemRodada.splice(0,1)[0])
         }
     }
 
     // Função para indicar a dupla vencedora da rounda
-    const DuplaVencedoraDeRounda = ()=>{
+    (async function DuplaVencedoraDeRounda(){
         const pontosDup1 = Duplas[0].pontos
         const pontosDup2 = Duplas[1].pontos
+        const divVencedores = document.getElementById('vencedores')
+        const h2 = document.createElement('h2')
+        const p = document.createElement('p')
 
         if(pontosDup1 == 60){
             console.log('Empate entre as duplas')
             Duplas[0].roundas+=1
             Duplas[1].roundas+=1
+            h2.innerHTML='Empate'
+            p.innerText = `Dupla ${0}: ${Duplas[0].roundas}\n Dupla ${1}: ${Duplas[1].roundas}`
         }else{
             const MaiorValorPontos = Math.max(pontosDup1,pontosDup2)
             const DuplaVencedora = Duplas.filter(dulpa => dulpa.pontos == MaiorValorPontos)
             
             const {id,pontos} = DuplaVencedora[0]
             console.log(`Dupla ${id} ganhou com ${pontos}`)
+            h2.innerHTML = `Dupla ${id} ganhou com ${pontos} pontos`
             if(MaiorValorPontos>=61 && MaiorValorPontos<=89){
                 Duplas[id].roundas +=1
             }else if(MaiorValorPontos>=90 && MaiorValorPontos<=119){
@@ -365,10 +424,12 @@ async function jogar(listUsers){
             }else{
                 Duplas[id].roundas +=4
             }
+            p.innerText = `Dupla ${0}: ${Duplas[0].roundas}\n Dupla ${1}: ${Duplas[1].roundas}`
         }
-    }
-    DuplaVencedoraDeRounda()
-
+        divVencedores.append(h2)
+        divVencedores.append(p)
+    })()
+    
     /*
         Remoção dos pontos para começar nova rounda
         E remoção dos baralhos de cada user
@@ -377,30 +438,39 @@ async function jogar(listUsers){
     console.log(Duplas)
     
     // Verificação se alguma dupla já alcançou as 4 roundas
-    for(let k =0;k<Duplas.length;k++){
-        if(Duplas[k].roundas>=4){
-            return VitoriaFinal(Duplas[k].id)
-        }else{
-            let firstElement = DivJogo.firstElementChild
-            while(firstElement){
-                firstElement.remove()
-                firstElement = DivJogo.firstElementChild
-            }
-            console.log(cartasJogadas)
-            users.forEach(user => {
-                user.baralho = []
-            })
-            BaralhoCompleto.forEach(value => {
-                BaralhoRounda.push(value)
-            })
-            return jogar(users)
+    const dup = Duplas.filter(dupla=>{dupla.roundas>=4})
+    console.log(`Dup: ${dup}`)
+    if(dup.length==1){
+        return VitoriaFinal(dup.id)
+    }else{
+        let firstElement = DivJogo.firstElementChild
+        while(firstElement){
+            firstElement.remove()
+            firstElement = DivJogo.firstElementChild
         }
+        console.log(cartasJogadas)
+        users.forEach(user => {
+            user.baralho = []
+        })
+        BaralhoCompleto.forEach(value => {
+            BaralhoRounda.push(value)
+        })
+        await tempoEspera(false,1500)
+        return jogar(users,false)
     }
-
-    buttonJogar.classList.toggle('hide-button')
 }
 
 
 function VitoriaFinal(IdDupla){
-    console.log(`Vítória da ${Duplas[IdDupla].id}`)
+    const divVencedores = document.getElementById('vencedores')
+    const h2 = document.createElement('h2')
+    const p = document.createElement('p')
+
+    h2.innerHTML=`Vitória da dupla ${IdDupla}`
+    p.innerHTML=`Com ${Duplas[IdDupla].roundas} roundas ganhas`
+    divVencedores.append(h2)
+    divVencedores.append(p)
+
+    console.log(`Vítória da ${IdDupla}`)
+    buttonJogar.visibility='visible'
 }
