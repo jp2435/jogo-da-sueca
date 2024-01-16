@@ -73,10 +73,12 @@ function addSrc(user){
 }
 
 function clickOnCard(event){
-    const img = document.getElementById(event.path[0].id)
+    console.log(event)
+    //const img = document.getElementById(event.path[0].id)
+    const img = document.getElementById(event.target.id)
     img.parentNode.removeChild(img)
     
-    let [idUser,idCarta] = String(event.path[0].id).split('-')
+    let [idUser,idCarta] = String(event.target.id).split('-')
     idUser = idUser-1
     const {id,baralho} = users[idUser]
     // Adicionar informação de que a carta selecionada foi jogada
